@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
-const YGGDRASIL_DIR = "../.."
+const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenFOAM"
@@ -74,6 +74,8 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "windows"),
+    Platform("aarch64", "darwin"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -398,14 +400,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("flex_jll"),
+    HostBuildDependency("flex_jll"),
     Dependency("SCOTCH_jll"; compat=SCOTCH_COMPAT_VERSION),
     Dependency("PTSCOTCH_jll"),
     Dependency("METIS_jll"),
-    Dependency("Zlib_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"5")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")
