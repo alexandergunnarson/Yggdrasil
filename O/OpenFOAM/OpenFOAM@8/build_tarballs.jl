@@ -2,17 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
-const YGGDRASIL_DIR = "../.."
+const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenFOAM"
-version = v"8.0.1"
-openfoam_version = v"8.0"
+version = v"8.0.20210316"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/OpenFOAM/OpenFOAM-8/archive/version-8.tar.gz",
-                  "94ba11cbaaa12fbb5b356e01758df403ac8832d69da309a5d79f76f42eb008fc"),
+    GitSource("https://github.com/OpenFOAM/OpenFOAM-8.git",
+              "1c9b5879390b09ea0320e98800aca0974dfcdc41"),
     DirectorySource("./bundled"),
 ]
 

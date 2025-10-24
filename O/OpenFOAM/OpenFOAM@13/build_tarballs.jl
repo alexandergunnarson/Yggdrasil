@@ -23,7 +23,7 @@ const SCOTCH_COMPAT_VERSION = "6.1.3"
 # Bash recipe for building across all platforms
 script = "SCOTCH_VERSION=$(SCOTCH_VERSION)\n" * raw"""
 cd ${WORKSPACE}/srcdir/OpenFOAM*
-atomic_patch -p1 ../patches/etc-bashrc.patch
+#atomic_patch -p1 ../patches/etc-bashrc.patch
 
 # Set rpath-link in all C/C++ compilers
 LDFLAGS=""
