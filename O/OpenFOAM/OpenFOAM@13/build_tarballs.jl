@@ -12,7 +12,6 @@ version = v"13.0.20250911"
 sources = [
     GitSource("https://github.com/OpenFOAM/OpenFOAM-13.git",
               "cde978a97c939b1d5c8f2efce4e12f9b9ec460a9"),
-    DirectorySource("./bundled"),
 ]
 
 # In order to set up OpenFOAM, we need to know the version of some of the
@@ -23,7 +22,8 @@ const SCOTCH_COMPAT_VERSION = "6.1.3"
 # Bash recipe for building across all platforms
 script = "SCOTCH_VERSION=$(SCOTCH_VERSION)\n" * raw"""
 cd ${WORKSPACE}/srcdir/OpenFOAM*
-#atomic_patch -p1 ../patches/etc-bashrc.patch
+
+ln -sf /proc/self/fd /dev/fd
 
 # Set rpath-link in all C/C++ compilers
 LDFLAGS=""
@@ -74,8 +74,6 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "windows"),
-    Platform("aarch64", "darwin"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -410,4 +408,4 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"6")
