@@ -366,40 +366,24 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         HostBuildDependency(PackageSpec(; name="CMake_jll", version = "3.24.3"))
     ]
 
-    # HACK: we can't install LLVM 12 JLLs for Julia 1.7 from within Julia 1.6. Similar
-    # for several other standard JLLs.
-    # So we use get_addable_spec below to "fake it" for now.
-    # This means the resulting package has fewer dependencies declared, but at least it
-    # will work and allow people to build JLL binaries ready for Julia 1.7
-    if version.major == 1 && version.minor == 10
-        push!(dependencies, BuildDependency("MbedTLS_jll")),
+    julia_deps = Dict(
+        10 => (tls="MbedTLS_jll", llvm=v"15.0.7+10", extra=[]),
+        11 => (tls="MbedTLS_jll", llvm=v"16.0.6+4", extra=[]),
+        12 => (tls="OpenSSL_jll", llvm=v"18.1.7+4", extra=[]),
+        13 => (tls="OpenSSL_jll", llvm=v"20.1.8+0", extra=["Zstd_jll"]),
+    )
+
+    if version.major == 1 && haskey(julia_deps, version.minor)
+        deps = julia_deps[version.minor]
+        push!(dependencies, BuildDependency(deps.tls))
+        for extra in deps.extra
+            push!(dependencies, BuildDependency(extra))
+        end
         push!(dependencies, BuildDependency("SuiteSparse_jll"))
         push!(dependencies, Dependency("LibUV_jll"))
         push!(dependencies, Dependency("LibUnwind_jll"; platforms=filter(!Sys.isapple, platforms)))
         push!(dependencies, Dependency("LLVMLibUnwind_jll"; platforms=filter(Sys.isapple, platforms)))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"15.0.7+10")))
-    elseif version.major == 1 && version.minor == 11
-        push!(dependencies, BuildDependency("MbedTLS_jll")),
-        push!(dependencies, BuildDependency("SuiteSparse_jll"))
-        push!(dependencies, Dependency("LibUV_jll"))
-        push!(dependencies, Dependency("LibUnwind_jll"; platforms=filter(!Sys.isapple, platforms)))
-        push!(dependencies, Dependency("LLVMLibUnwind_jll"; platforms=filter(Sys.isapple, platforms)))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"16.0.6+4")))
-    elseif version.major == 1 && version.minor == 12
-        push!(dependencies, BuildDependency("OpenSSL_jll")),
-        push!(dependencies, BuildDependency("SuiteSparse_jll"))
-        push!(dependencies, Dependency("LibUV_jll"))
-        push!(dependencies, Dependency("LibUnwind_jll"; platforms=filter(!Sys.isapple, platforms)))
-        push!(dependencies, Dependency("LLVMLibUnwind_jll"; platforms=filter(Sys.isapple, platforms)))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"18.1.7+4")))
-    elseif version.major == 1 && version.minor == 13
-        push!(dependencies, BuildDependency("OpenSSL_jll")),
-        push!(dependencies, BuildDependency("Zstd_jll")),
-        push!(dependencies, BuildDependency("SuiteSparse_jll"))
-        push!(dependencies, Dependency("LibUV_jll"))
-        push!(dependencies, Dependency("LibUnwind_jll"; platforms=filter(!Sys.isapple, platforms)))
-        push!(dependencies, Dependency("LLVMLibUnwind_jll"; platforms=filter(Sys.isapple, platforms)))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"20.1.8+0")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", deps.llvm)))
     else
         error("Unsupported Julia version")
     end
