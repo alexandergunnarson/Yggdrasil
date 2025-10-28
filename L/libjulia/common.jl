@@ -362,6 +362,10 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         BuildDependency("MPFR_jll"),
         BuildDependency("GMP_jll"),
         BuildDependency("Objconv_jll"),
+        BuildDependency("SuiteSparse_jll"),
+        Dependency("LibUV_jll"),
+        Dependency("LibUnwind_jll"; platforms=filter(!Sys.isapple, platforms)),
+        Dependency("LLVMLibUnwind_jll"; platforms=filter(Sys.isapple, platforms)),
         # needed for suitesparse >= 7.2.0
         HostBuildDependency(PackageSpec(; name="CMake_jll", version = "3.24.3"))
     ]
@@ -379,10 +383,6 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         for extra in deps.extra
             push!(dependencies, BuildDependency(extra))
         end
-        push!(dependencies, BuildDependency("SuiteSparse_jll"))
-        push!(dependencies, Dependency("LibUV_jll"))
-        push!(dependencies, Dependency("LibUnwind_jll"; platforms=filter(!Sys.isapple, platforms)))
-        push!(dependencies, Dependency("LLVMLibUnwind_jll"; platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", deps.llvm)))
     else
         error("Unsupported Julia version")
